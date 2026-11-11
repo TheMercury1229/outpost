@@ -25,7 +25,7 @@ export const WorkspaceCard = ({
       )}
     >
       <Link
-        href={`/workspace/${workspace.id}`}
+        href={`/workspaces/${workspace.id}`}
         draggable={false}
         className="line-clamp-2 pr-7 text-sm leading-snug font-medium after:absolute after:inset-0"
       >

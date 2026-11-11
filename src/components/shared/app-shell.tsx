@@ -6,7 +6,7 @@ import { SiteHeader } from "./site-header";
 export const AppShell = ({ children }: { children: React.ReactNode }) => {
   const pathname = usePathname();
   const isFullScreenRoute =
-    pathname?.startsWith("/workspace/") || pathname?.startsWith("/shared/");
+    pathname?.startsWith("/workspaces/") || pathname?.startsWith("/shared/");
 
   if (isFullScreenRoute) {
     return <>{children}</>;
