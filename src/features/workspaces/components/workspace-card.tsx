@@ -1,6 +1,6 @@
 import React from "react";
 import { cn } from "@/lib/utils";
-import { WorkspaceCardData } from "../types";
+import { WorkspaceCardData } from "@/features/dashboard/types";
 import Link from "next/link";
 import { LayoutGridIcon } from "lucide-react";
 import { statusTitle } from "@/lib/workspace-status";

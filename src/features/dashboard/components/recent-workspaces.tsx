@@ -1,5 +1,5 @@
 import { WorkspaceCardData } from "../types";
-import { WorkspaceCard } from "./workspace-card";
+import { WorkspaceCard } from "@/features/workspaces/components/workspace-card";
 
 export const RecentWorkspaces = ({
   workspaces,

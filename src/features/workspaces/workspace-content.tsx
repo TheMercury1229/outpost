@@ -2,7 +2,7 @@ import {
   WorkspaceBoard,
   type BoardWorkspace,
 } from "@/features/workspaces/components/workspace-board";
-import { WorkspaceDialog } from "@/features/dashboard/components/workspace-dialog";
+import { WorkspaceDialog } from "@/features/workspaces/components/workspace-dialog";
 import { Button } from "@/components/ui/button";
 import { PlusIcon } from "lucide-react";
 

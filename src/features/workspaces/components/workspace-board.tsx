@@ -11,7 +11,7 @@ import {
 import { WORKSPACE_STATUSES } from "@/lib/workspace-status";
 import { WorkspaceStatus } from "@/generated/prisma/enums";
 import { cn } from "cn";
-import { WorkspaceCard } from "@/features/dashboard/components/workspace-card";
+import { WorkspaceCard } from "@/features/workspaces/components/workspace-card";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -33,7 +33,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { useFetch } from "@/hooks/use-fetch";
 import { deleteWorkspace, moveWorkspace } from "@/actions/workspaces-actions";
-import { WorkspaceDialog } from "@/features/dashboard/components/workspace-dialog";
+import { WorkspaceDialog } from "@/features/workspaces/components/workspace-dialog";
 import { toast } from "sonner";
 export type BoardWorkspace = WorkspaceCardData & { position: number };
 

@@ -8,7 +8,8 @@ import { workspaceCardSelect } from "@/lib/workspace-status";
 import { auth } from "@clerk/nextjs/server";
 import { revalidatePath } from "next/cache";
 import { notFound } from "next/navigation";
-
+import { Prisma } from "@/generated/prisma/client";
+import * as Y from "yjs";
 function revalidateWorkspaceLists() {
   revalidatePath("/dashboard");
   revalidatePath("/workspaces");
@@ -72,6 +73,7 @@ export async function updateWorkspace(
   });
 
   revalidateWorkspaceLists();
+  revalidatePath(`/workspaces/${workspaceId}`);
   return { success: true };
 }
 
@@ -103,10 +105,51 @@ export async function getWorkspace(workspaceId: string) {
   }
   const workspace = await prisma.workspace.findUnique({
     where: { id: workspaceId },
-    select: { name: true },
+    select: {
+      name: true,
+      canvas: { select: { content: true } },
+      doc: { select: { content: true, yjsState: true } },
+    },
   });
   if (!workspace) {
     return notFound();
   }
   return workspace;
+}
+
+export async function saveCanvasContent(
+  workspaceId: string,
+  content: Prisma.InputJsonValue,
+) {
+  if (!(await canAccessWorkspace(workspaceId))) {
+    throw new Error("Workspace not found");
+  }
+
+  await prisma.canvas.update({
+    where: { workspaceId },
+    data: { content },
+  });
+}
+
+export async function saveDocContent(
+  workspaceId: string,
+  yjsState: string,
+  content: Prisma.InputJsonValue,
+) {
+  if (!(await canAccessWorkspace(workspaceId))) {
+    throw new Error("Workspace not found");
+  }
+  const incoming = Buffer.from(yjsState, "base64");
+  await prisma.$transaction(async (tx) => {
+    const [row] = await tx.$queryRaw<
+      { yjsState: Uint8Array | null }[]
+    >`SELECT "yjsState" FROM "Doc" WHERE "workspaceId" = ${workspaceId} FOR UPDATE`;
+    const merged = row?.yjsState
+      ? Y.mergeUpdates([row.yjsState, incoming])
+      : incoming;
+    await tx.doc.update({
+      where: { workspaceId },
+      data: { yjsState: Uint8Array.from(merged), content },
+    });
+  });
 }

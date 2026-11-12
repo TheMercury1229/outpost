@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { KanbanSquareIcon, PlusIcon } from "lucide-react";
 import { RecentWorkspaces } from "./components/recent-workspaces";
-import { WorkspaceDialog } from "./components/workspace-dialog";
+import { WorkspaceDialog } from "@/features/workspaces/components/workspace-dialog";
 import { DashboardPrompt } from "./components/dashboard-prompt";
 
 export const DashboardPageContent = ({
