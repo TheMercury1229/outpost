@@ -50,7 +50,7 @@ export const EditableWorkspaceName = ({
     <button
       disabled={!!loading}
       onClick={() => setEditing(true)}
-      className="rounded-md px-1.5 py-0.5 text-sm font-medium transition-colors hover:bg-accent"
+      className="max-w-52 truncate rounded-md px-1.5 py-0.5 text-sm font-medium transition-colors hover:bg-accent"
     >
       {name}
     </button>

@@ -1,10 +1,12 @@
 import { getWorkspace } from "@/actions/workspaces-actions";
+import { PlanButton } from "@/components/shared/plan-button";
 import { Button } from "@/components/ui/button";
 import {
   ResizableHandle,
   ResizablePanel,
   ResizablePanelGroup,
 } from "@/components/ui/resizable";
+import { AgentToggleButton } from "@/features/workspaces/components/agent-toggle-button";
 import { CanvasEditor } from "@/features/workspaces/components/canvas-editor";
 import { DocEditor } from "@/features/workspaces/components/doc-editor-loader";
 import { EditableWorkspaceName } from "@/features/workspaces/components/editable-workspace-name";
@@ -26,7 +28,7 @@ export default async function WorkspacePage({
   searchParams,
 }: PageProps<"/workspaces/[id]">) {
   const { id } = await params;
-  const { view: viewParam } = await searchParams;
+  const { view: viewParam, prompt } = await searchParams;
   const view = parseViewMode(viewParam);
 
   if (!(await canAccessWorkspace(id))) notFound();
@@ -84,6 +86,11 @@ export default async function WorkspacePage({
           </div>
           <div className="flex flex-1 items-center justify-end gap-2">
             {/* TODO:ShareDialog, AgentToggleButton */}
+            <PlanButton upgradeOnlyWhenOut={true} />
+            <AgentToggleButton
+              workspaceId={id}
+              initialPrompt={typeof prompt === "string" ? prompt : undefined}
+            />
           </div>
         </header>
         <ResizablePanelGroup

@@ -66,3 +66,27 @@ export async function getEntitlements(ownerId: string) {
     pdfExport: features.has("pdf_export"),
   };
 }
+
+function startOfMonthUtc() {
+  const now = new Date();
+  return new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1));
+}
+
+export async function getPromptUsage(ownerId: string) {
+  const [{ promptLimit, isPaid }, used] = await Promise.all([
+    getEntitlements(ownerId),
+    prisma.agentPrompt.count({
+      where: { ownerId, createdAt: { gte: startOfMonthUtc() } },
+    }),
+  ]);
+
+  return { used, limit: promptLimit, isPaid };
+}
+
+export async function recordPrompt(
+  ownerId: string,
+  userId: string,
+  workspaceId: string,
+) {
+  await prisma.agentPrompt.create({ data: { ownerId, userId, workspaceId } });
+}

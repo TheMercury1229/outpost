@@ -2,6 +2,13 @@ import { checkUser } from "@/actions/check-user";
 import { canAccessWorkspace } from "@/lib/workspace-access";
 import { convertToModelMessages, streamText, type UIMessage } from "ai";
 import { google } from "@ai-sdk/google";
+import { agentToolDefs } from "@/lib/agent-tools";
+import {
+  getPromptUsage,
+  getWorkspaceOwnerId,
+  recordPrompt,
+} from "@/lib/billing";
+import { PROMPT_LIMIT_ERROR } from "@/data/plan-limits";
 const SYSTEM_PROMPT = `You are Outpost's workspace agent. A workspace has two surfaces: a canvas (an infinite whiteboard for diagrams) and a doc (a rich-text document). You change them only by calling tools, never by describing changes in text. Never use em dashes in your replies.
 
 Choosing where to work:
@@ -49,15 +56,36 @@ export async function POST(req: Request) {
   if (!(await canAccessWorkspace(workspaceId))) {
     return new Response("Workspace not found", { status: 404 });
   }
+  let ownerId: string | null = null;
+  if (messages.at(-1)?.role === "user") {
+    ownerId = await getWorkspaceOwnerId(workspaceId);
+    const { used, limit } = await getPromptUsage(ownerId);
+    if (used >= limit) {
+      return Response.json(
+        {
+          error: PROMPT_LIMIT_ERROR,
+          used,
+          limit,
+        },
+        {
+          status: 402,
+        },
+      );
+    }
+  }
   const sysPrompt = `${SYSTEM_PROMPT}\n\nCurrent Canvas State:\n${canvasContext ?? NOT_OPEN}\n\n Current Doc state:\n${docContext ?? NOT_OPEN}`;
   const result = streamText({
     model: google("gemini-3.5-flash-lite"),
     system: sysPrompt,
+    tools: agentToolDefs,
     messages: await convertToModelMessages(messages),
     providerOptions: {
       google: {
         thinkingConfig: { includeThoughts: true },
       },
+    },
+    onFinish: async () => {
+      if (ownerId) await recordPrompt(ownerId, user.id, workspaceId);
     },
   });
 
