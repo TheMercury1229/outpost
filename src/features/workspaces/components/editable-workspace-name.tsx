@@ -10,12 +10,6 @@ export const EditableWorkspaceName = ({
   workspaceId: string;
   initialName: string;
 }) => {
-  console.log(
-    "EditableWorkspaceName rendered with id:",
-    workspaceId,
-    "and initialName:",
-    initialName,
-  );
   const [editing, setEditing] = useState(false);
   const [name, setName] = useState(initialName);
   const { fn: updateWorkspaceFn, loading } = useFetch(updateWorkspace);

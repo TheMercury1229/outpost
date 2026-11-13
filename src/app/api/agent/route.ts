@@ -9,6 +9,14 @@ import {
   recordPrompt,
 } from "@/lib/billing";
 import { PROMPT_LIMIT_ERROR } from "@/data/plan-limits";
+import { z } from "zod";
+
+const agentBodySchema = z.object({
+  workspaceId: z.string().min(1).max(128),
+  messages: z.array(z.any()).max(200),
+  canvasContext: z.string().max(30_000).nullable(),
+  docContext: z.string().max(30_000).nullable(),
+});
 const SYSTEM_PROMPT = `You are Outpost's workspace agent. A workspace has two surfaces: a canvas (an infinite whiteboard for diagrams) and a doc (a rich-text document). You change them only by calling tools, never by describing changes in text. Never use em dashes in your replies.
 
 Choosing where to work:
@@ -41,6 +49,11 @@ export async function POST(req: Request) {
   const user = await checkUser();
   if (!user) return new Response("Unauthorised", { status: 401 });
 
+  const rawBody = await req.json();
+  const parsed = agentBodySchema.safeParse(rawBody);
+  if (!parsed.success) {
+    return new Response("Bad request", { status: 400 });
+  }
   const {
     messages,
     workspaceId,
@@ -51,7 +64,12 @@ export async function POST(req: Request) {
     workspaceId: string;
     canvasContext: string | null;
     docContext: string | null;
-  } = await req.json();
+  } = parsed.data as {
+    messages: UIMessage[];
+    workspaceId: string;
+    canvasContext: string | null;
+    docContext: string | null;
+  };
 
   if (!(await canAccessWorkspace(workspaceId))) {
     return new Response("Workspace not found", { status: 404 });

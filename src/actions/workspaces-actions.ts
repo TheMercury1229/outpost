@@ -168,8 +168,20 @@ export async function setWorkspaceSharing(
   workspaceId: string,
   enabled: boolean,
 ): Promise<SetWorkspaceSharingResult> {
-  if (!(await canAccessWorkspace(workspaceId))) {
+  const { userId, orgId, orgRole } = await auth();
+  if (!userId || !(await canAccessWorkspace(workspaceId))) {
     throw new Error("Workspace not found");
+  }
+
+  // Only the creator or an org admin may change sharing settings
+  const ws = await prisma.workspace.findUniqueOrThrow({
+    where: { id: workspaceId },
+    select: workspaceOwnerSelect,
+  });
+  const isCreator = ws.creator.clerkId === userId;
+  const isOrgAdmin = orgRole === "org:admin" && ws.clerkOrgId === orgId;
+  if (!isCreator && !isOrgAdmin) {
+    throw new Error("Only the workspace owner can change sharing settings");
   }
 
   if (enabled) {
