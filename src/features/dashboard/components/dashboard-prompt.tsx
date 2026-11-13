@@ -81,9 +81,7 @@ export const DashboardPrompt = () => {
               onClick={speech.isListening ? speech.stop : speech.toggle}
               disabled={busy || !speech.isSupported}
               aria-label={
-                speech.isListening
-                  ? "Stop voice input"
-                  : "Start voice input"
+                speech.isListening ? "Stop voice input" : "Start voice input"
               }
               aria-pressed={speech.isListening}
               className={`rounded-full ${

@@ -83,6 +83,7 @@ export const CanvasEditor = ({
         id: userId,
         name: userName,
         color: colorForUser(userId),
+        colorScheme: "dark",
       })),
     });
   }, [userId, userName]);
@@ -94,6 +95,7 @@ export const CanvasEditor = ({
   });
 
   const handleMount = (editor: Editor) => {
+    editor.user.updateUserPreferences({ colorScheme: "dark" });
     setCanvasEditor(editor);
     if (initialSnapshot && editor.getCurrentPageShapeIds().size === 0) {
       editor.loadSnapshot(initialSnapshot);

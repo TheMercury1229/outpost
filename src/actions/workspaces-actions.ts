@@ -9,6 +9,9 @@ import { auth } from "@clerk/nextjs/server";
 import { revalidatePath } from "next/cache";
 import { notFound } from "next/navigation";
 import { Prisma } from "@/generated/prisma/client";
+import { randomBytes } from "node:crypto";
+import { getEntitlements, getWorkspaceOwnerId } from "@/lib/billing";
+
 import * as Y from "yjs";
 function revalidateWorkspaceLists() {
   revalidatePath("/dashboard");
@@ -107,6 +110,7 @@ export async function getWorkspace(workspaceId: string) {
     where: { id: workspaceId },
     select: {
       name: true,
+      shareToken: true,
       canvas: { select: { content: true } },
       doc: { select: { content: true, yjsState: true } },
     },
@@ -153,3 +157,43 @@ export async function saveDocContent(
     });
   });
 }
+
+
+
+export type SetWorkspaceSharingResult =
+  | { limit: "sharing" }
+  | { token: string | null };
+
+export async function setWorkspaceSharing(
+  workspaceId: string,
+  enabled: boolean,
+): Promise<SetWorkspaceSharingResult> {
+  if (!(await canAccessWorkspace(workspaceId))) {
+    throw new Error("Workspace not found");
+  }
+
+  if (enabled) {
+    const ownerId = await getWorkspaceOwnerId(workspaceId);
+    const entitlements = await getEntitlements(ownerId);
+
+    if (!entitlements.publicSharing) {
+      return { limit: "sharing" };
+    }
+
+    const token = randomBytes(24).toString("base64url");
+    await prisma.workspace.update({
+      where: { id: workspaceId },
+      data: { shareToken: token },
+    });
+
+    return { token };
+  }
+
+  await prisma.workspace.update({
+    where: { id: workspaceId },
+    data: { shareToken: null },
+  });
+
+  return { token: null };
+}
+

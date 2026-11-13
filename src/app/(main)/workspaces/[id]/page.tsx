@@ -10,7 +10,9 @@ import { AgentToggleButton } from "@/features/workspaces/components/agent-toggle
 import { CanvasEditor } from "@/features/workspaces/components/canvas-editor";
 import { DocEditor } from "@/features/workspaces/components/doc-editor-loader";
 import { EditableWorkspaceName } from "@/features/workspaces/components/editable-workspace-name";
+import { ShareDialog } from "@/features/workspaces/components/share-dialog";
 import { WorkspaceEditorsProvider } from "@/features/workspaces/providers/workspace-editor-context";
+import { getEntitlements, getWorkspaceOwnerId } from "@/lib/billing";
 import { canAccessWorkspace } from "@/lib/workspace-access";
 import { Block } from "@blocknote/core";
 import Image from "next/image";
@@ -33,6 +35,10 @@ export default async function WorkspacePage({
 
   if (!(await canAccessWorkspace(id))) notFound();
   const workspace = await getWorkspace(id);
+  const ownerId = await getWorkspaceOwnerId(id);
+  const entitlements = await getEntitlements(ownerId);
+  const canShare = entitlements.publicSharing;
+  const canExportPdf = entitlements.pdfExport;
 
   const showDoc = view === "doc" || view === "both";
   const showCanvas = view === "canvas" || view === "both";
@@ -85,8 +91,14 @@ export default async function WorkspacePage({
             ))}
           </div>
           <div className="flex flex-1 items-center justify-end gap-2">
-            {/* TODO:ShareDialog, AgentToggleButton */}
             <PlanButton upgradeOnlyWhenOut={true} />
+            <ShareDialog
+              workspaceId={id}
+              workspaceName={workspace.name}
+              initialShareToken={workspace.shareToken}
+              canShare={canShare}
+              canExportPdf={canExportPdf}
+            />
             <AgentToggleButton
               workspaceId={id}
               initialPrompt={typeof prompt === "string" ? prompt : undefined}

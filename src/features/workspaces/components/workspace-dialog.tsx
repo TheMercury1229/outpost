@@ -79,11 +79,7 @@ function WorkspaceForm({
   const isLoading = loading || updating;
   async function handleSubmit() {
     if (workspace) {
-      const result = await updateWorkspaceFn(
-        workspace.id,
-        name,
-        description,
-      );
+      const result = await updateWorkspaceFn(workspace.id, name, description);
       if (!result) return;
       onDone();
       toast.success("Workspace updated");

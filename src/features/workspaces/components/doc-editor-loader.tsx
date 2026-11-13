@@ -11,3 +11,13 @@ export const DocEditor = dynamic(
     ssr: false,
   },
 );
+
+export const DocViewer = dynamic(
+  () =>
+    import("@/features/workspaces/components/doc-viewer").then(
+      (m) => m.DocViewer,
+    ),
+  {
+    ssr: false,
+  },
+);

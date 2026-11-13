@@ -38,10 +38,7 @@ export const UpgradeDialogProvider = ({
       value={(next) => setReason(next ?? DEFAULT_UPGRADE_REASON)}
     >
       {children}
-      <Dialog
-        open={reason !== null}
-        onOpenChange={(open) => !open && close()}
-      >
+      <Dialog open={reason !== null} onOpenChange={(open) => !open && close()}>
         <DialogContent className="max-h-[90dvh] overflow-y-auto sm:max-w-5xl">
           <DialogHeader className="items-center text-center">
             <DialogTitle className="text-2xl">{reason?.title}</DialogTitle>
